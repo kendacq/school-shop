@@ -5,7 +5,7 @@
         <nav role="navigation" aria-label="Main navigation">
             <div class="flex justify-end p-2">
                 <div class="lg:block hidden mr-auto">
-                    <a href="{{ route('shop') }}"
+                    <a href="{{ route('index') }}"
                         class="lg:inline-block font-bold mx-1 p-1">
                         LOGO
                     </a>
