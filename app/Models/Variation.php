@@ -8,9 +8,8 @@ class Variation extends Model
 {
     protected $fillable = [
         'item_id',
-        'name',
-        'type',
         'sku',
+        'attributes',
         'price',
         'stock',
         'image_path',
