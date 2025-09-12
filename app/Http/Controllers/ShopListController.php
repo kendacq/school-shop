@@ -11,12 +11,45 @@ class ShopListController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Item::query();
+        $query = Item::with('category', 'variations');
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('sku', 'LIKE', "%{$search}%")
+                    ->orWhere('name', 'LIKE', "%{$search}%")
+                    ->orWhereHas('category', fn($q2) => $q2->where('name', 'LIKE', "%{$search}%"));
+            });
+        }
+
+        if ($category = $request->input('category')) {
+            $query->where('category_id', $category);
+        }
 
         $items = $query->paginate(12)->withQueryString();
+        $categories = Category::pluck('name', 'id');
 
-        $categories = Category::pluck('name');
+        return view('index', compact('items', 'categories'));
+    }
 
-        return view("shop", compact("items", "categories"));
+    public function items(Request $request)
+    {
+        $query = Item::with('category', 'variations');
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('sku', 'LIKE', "%{$search}%")
+                    ->orWhere('name', 'LIKE', "%{$search}%")
+                    ->orWhereHas('category', fn($q2) => $q2->where('name', 'LIKE', "%{$search}%"));
+            });
+        }
+
+        if ($category = $request->input('category')) {
+            $query->where('category_id', $category);
+        }
+
+        $items = $query->paginate(12)->withQueryString();
+        $categories = Category::pluck('name', 'id');
+
+        return view('components.item-list', compact('items', 'categories'))->render();
     }
 }

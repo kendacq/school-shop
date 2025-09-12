@@ -1,12 +1,14 @@
 <?php
 
-use App\Http\Controllers\ShopListController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ShopListController;
 
-Route::get('/', [ShopListController::class, 'index'])->name('shop');
+Route::get('/', [ShopListController::class, 'index'])->name('index');
 
-Route::post('/login', [UserController::class, 'login'])->name(name: 'login');
+Route::get('/items', [ShopListController::class, 'items'])->name('items');
+
+Route::post('/login', [UserController::class, 'login'])->name('login');
 
 Route::post('/signup', [UserController::class, 'signup'])->name('signup');
 
