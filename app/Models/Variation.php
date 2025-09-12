@@ -16,6 +16,10 @@ class Variation extends Model
         'alt_text'
     ];
 
+    protected $casts = [
+        'attributes' => 'array',
+    ];
+
     public function item()
     {
         return $this->belongsTo(Item::class);
