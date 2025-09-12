@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('books', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('item_id')->constrained()->cascadeOnDelete();
             $table->string('book_id')->nullable();
             $table->string('author')->nullable();
             $table->string('publisher')->nullable();
