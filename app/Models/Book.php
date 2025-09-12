@@ -19,7 +19,7 @@ class Book extends Model
     ];
 
     protected $casts = [
-        'publish_date' => 'datetime',
+        'publish_date' => 'date',
     ];
 
     public function item()
