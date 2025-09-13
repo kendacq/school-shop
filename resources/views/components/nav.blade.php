@@ -5,8 +5,7 @@
         <nav role="navigation" aria-label="Main navigation">
             <div class="flex justify-end p-2">
                 <div class="lg:block hidden mr-auto">
-                    <a href="{{ route('index') }}"
-                        class="lg:inline-block font-bold mx-1 p-1">
+                    <a href="{{ route('index') }}" class="lg:inline-block font-bold mx-1 p-1">
                         LOGO
                     </a>
                 </div>
@@ -48,7 +47,7 @@
 </header>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const openSignup = document.getElementById('signupModalBtn');
         const openLogin = document.getElementById('loginModalBtn');
         const openSignupLink = document.getElementById('signupModalLink');
