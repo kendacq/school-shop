@@ -11,112 +11,142 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll(".item-card").forEach(card => {
-            const item = JSON.parse(card.dataset.item);
-            const modal = document.getElementById(`productModal-${item.id}`);
-            const stockDisplay = card.querySelector(".stock-display");
-            const quantityInput = card.querySelector(".quantity");
-            const priceElement = card.querySelector(".variation-price");
-            const imageElement = card.querySelector(".variation-image");
-            const actionButtons = card.querySelectorAll(".action-btn");
+    document.addEventListener('DOMContentLoaded', () => {
+        class ProductCard {
+            constructor(card) {
+                this.card = card;
+                this.item = JSON.parse(card.dataset.item);
+                this.quantityInput = card.querySelector('.quantity');
+                this.stockDisplay = card.querySelector('.stock-display');
+                this.priceDisplay = card.querySelector('.variant-price');
+                this.actionButtons = card.querySelectorAll('.order-btn');
+                this.variantOptions = card.querySelectorAll('.variant-option');
+                this.itemInput = card.querySelector('.item-id');
+                this.variantInput = card.querySelector('.variant-id');
 
-            function actionButtonsState(state) {
-                actionButtons.forEach(btn => {
-                    btn.disabled = state;
-                    if (state) {
-                        btn.classList.add("opacity-50", "cursor-not-allowed");
-                    } else {
-                        btn.classList.remove("opacity-50", "cursor-not-allowed");
-                    }
+                this.bindEvents();
+                this.updateUI();
+            }
+
+            bindEvents() {
+                this.variantOptions.forEach(input =>
+                    input.addEventListener('change', () => this.updateUI())
+                );
+
+                this.card.querySelector('.increment')?.addEventListener('click', () => this.increment());
+                this.card.querySelector('.decrement')?.addEventListener('click', () => this.decrement());
+
+                this.actionButtons.forEach(btn =>
+                    btn.addEventListener('click', e => this.addToCart(e, btn))
+                );
+
+                this.card.querySelector('.open-modal')?.addEventListener('click', e => {
+                    e.preventDefault();
+                    this.card.querySelector('.modal').classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                });
+                this.card.querySelector('.close-modal')?.addEventListener('click', () => {
+                    this.card.querySelector('.modal').classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
                 });
             }
 
-            card.querySelector(".open-modal").addEventListener("click", e => {
-                e.preventDefault();
-                modal.classList.remove("hidden");
-                document.body.classList.add("overflow-hidden");
-            });
-
-            modal.querySelector(".close-modal").addEventListener("click", () => {
-                modal.classList.add("hidden");
-                document.body.classList.remove("overflow-hidden");
-            });
-
-            function updateStockPriceImage() {
-                let selected = {};
-                card.querySelectorAll(".variation-option:checked").forEach(input => {
-                    selected[input.name.replace("attributes[", "").replace("]", "")] = input
-                        .value;
-                });
-
-                const match = item.variations.find(v =>
-                    Object.entries(selected).every(([key, value]) => v.attributes[key] === value)
+            updateUI() {
+                const selectedAttributes = Object.fromEntries(
+                    [...this.variantOptions].filter(i => i.checked)
+                    .map(i => [i.name.replace(/attributes\[|\]/g, ''), i.value])
                 );
 
-                if (item.variations.length > 0) {
-                    if (match) {
-                        if (stockDisplay) {
-                            stockDisplay.textContent = "Available: " + match.stock;
-                        }
-                        if (quantityInput) {
-                            quantityInput.disabled = false;
-                            quantityInput.max = match.stock;
-                            if (parseInt(quantityInput.value) > match.stock) {
-                                quantityInput.value = match.stock;
-                            }
-                        }
+                let match = this.item.variants.find(v =>
+                    Object.entries(selectedAttributes).every(([k, val]) => v.attributes[k] === val)
+                );
 
-                        if (priceElement) {
-                            priceElement.textContent = "₱ " + parseFloat(match.price).toFixed(2);
-                        }
+                if (!match && this.item.variants.length === 0) match = {
+                    id: null,
+                    stock: this.item.stock,
+                    price: this.item.price,
+                    image_path: this.item.image_path
+                };
 
-                        if (imageElement && match.image_path) {
-                            imageElement.src = match.image_path;
-                        }
-                        document.querySelector('input[name="variation_id"]').value = match.id;
-                        actionButtonsState(match.stock <= 0);
-                    } else {
-                        if (stockDisplay) {
-                            stockDisplay.textContent = "";
-                        }
-                        if (quantityInput) {
-                            quantityInput.disabled = true;
-                        }
-                        if (priceElement) {
-                            priceElement.textContent = "Not Available";
-                        }
-                        if (imageElement) {
-                            imageElement.src = item.image_path;
-                        }
-                        actionButtonsState(true);
-                    }
+                if (match) {
+                    this.itemInput.value = this.item.id;
+                    this.variantInput.value = match.id || '';
+
+                    this.stockDisplay.textContent = `Available: ${match.stock}`;
+                    this.quantityInput.max = match.stock;
+                    this.priceDisplay && (this.priceDisplay.textContent =
+                        `₱ ${parseFloat(match.price).toFixed(2)}`);
+                    this.quantityInput.disabled = match.stock <= 0;
+                    this.setButtonsEnabled(match.stock > 0);
+                } else {
+                    this.stockDisplay.textContent = '';
+                    this.quantityInput.disabled = true;
+                    this.priceDisplay && (this.priceDisplay.textContent = 'Not Available');
+                    this.setButtonsEnabled(false);
                 }
             }
 
-            card.querySelectorAll(".variation-option").forEach(input => {
-                input.addEventListener("change", updateStockPriceImage);
-            });
+            increment() {
+                if (parseInt(this.quantityInput.value) < parseInt(this.quantityInput.max)) this
+                    .quantityInput.value++;
+            }
 
-            updateStockPriceImage();
+            decrement() {
+                if (parseInt(this.quantityInput.value) > parseInt(this.quantityInput.min)) this
+                    .quantityInput.value--;
+            }
 
-            if (card.querySelector(".increment")) {
-                card.querySelector(".increment").addEventListener("click", () => {
-                    const max = parseInt(quantityInput.max);
-                    if (!quantityInput.disabled && parseInt(quantityInput.value) < max) {
-                        quantityInput.value = parseInt(quantityInput.value) + 1;
-                    }
+            setButtonsEnabled(enabled) {
+                this.actionButtons.forEach(btn => {
+                    btn.disabled = !enabled;
+                    btn.classList.toggle('opacity-50', !enabled);
+                    btn.classList.toggle('cursor-not-allowed', !enabled);
                 });
             }
 
-            if (card.querySelector(".decrement")) {
-                card.querySelector(".decrement").addEventListener("click", () => {
-                    const min = parseInt(quantityInput.min);
-                    if (!quantityInput.disabled && parseInt(quantityInput.value) > min) {
-                        quantityInput.value = parseInt(quantityInput.value) - 1;
-                    }
-                });
+            async addToCart(e, btn) {
+                e.preventDefault();
+
+                const itemId = this.itemInput.value;
+                const variantId = this.variantInput.value || null;
+                const quantity = parseInt(this.quantityInput.value) || 1;
+
+                const payload = {
+                    item_id: itemId,
+                    variant_id: variantId,
+                    quantity
+                };
+
+                const route = btn.dataset.route;
+                const errorContainer = this.card.querySelector('.order-error');
+                errorContainer && (errorContainer.textContent = '');
+                btn.disabled = true;
+
+                try {
+                    const res = await fetch(route, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Something went wrong');
+
+                    alert('Item added to cart!');
+                    this.quantityInput.value = 1;
+                } catch (err) {
+                    console.error(err);
+                    errorContainer && (errorContainer.textContent = err.message || 'Network error');
+                } finally {
+                    btn.disabled = false;
+                }
             }
-        });
+        }
+
+        document.querySelectorAll('.item-card').forEach(card => new ProductCard(card));
     });
 </script>

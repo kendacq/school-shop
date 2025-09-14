@@ -11,11 +11,26 @@
                 </div>
                 @auth
                     <div class="px-2">
+                        <a href="{{ route('cart.index') }}"
+                            class="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold h-10 min-w-[45px] px-4 rounded-sm justify-center"
+                            aria-label="View cart">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+                                aria-hidden="true" role="img">
+                                <title>Cart</title>
+                                <path d="M6 6h15l-1.4 7.2a2 2 0 0 1-2 1.6H9.4L7.6 6H6z" />
+                                <circle cx="10" cy="19" r="1.4" />
+                                <circle cx="18" cy="19" r="1.4" />
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="px-2">
                         <a href="#profile"
-                            class="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                                <path
-                                    d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z" />
+                            class="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-bold h-10 min-w-[100px] px-4 rounded-sm justify-center">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                                stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Profile">
+                                <circle cx="12" cy="8" r="4" />
+                                <path d="M4 20c0-4 8-4 8-4s8 0 8 4" />
                             </svg>
                             <p>{{ auth()->user()->first_name }}</p>
                         </a>
@@ -46,41 +61,43 @@
     </div>
 </header>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const openSignup = document.getElementById('signupModalBtn');
-        const openLogin = document.getElementById('loginModalBtn');
-        const openSignupLink = document.getElementById('signupModalLink');
-        const openLoginLink = document.getElementById('loginModalLink');
-        const signupModal = document.getElementById('signupModal');
-        const loginModal = document.getElementById('loginModal');
-        const closeSignupBtn = document.getElementById('closeSignupModal');
-        const closeLoginBtn = document.getElementById('closeLoginModal');
+@guest
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const openSignup = document.getElementById('signupModalBtn');
+            const openLogin = document.getElementById('loginModalBtn');
+            const openSignupLink = document.getElementById('signupModalLink');
+            const openLoginLink = document.getElementById('loginModalLink');
+            const signupModal = document.getElementById('signupModal');
+            const loginModal = document.getElementById('loginModal');
+            const closeSignupBtn = document.getElementById('closeSignupModal');
+            const closeLoginBtn = document.getElementById('closeLoginModal');
 
-        openSignup.addEventListener('click', () => {
-            signupModal.classList.remove('hidden');
-        });
+            openSignup.addEventListener('click', () => {
+                signupModal.classList.remove('hidden');
+            });
 
-        openSignupLink.addEventListener('click', () => {
-            signupModal.classList.add('hidden');
-            loginModal.classList.remove('hidden');
-        });
+            openSignupLink.addEventListener('click', () => {
+                signupModal.classList.add('hidden');
+                loginModal.classList.remove('hidden');
+            });
 
-        openLogin.addEventListener('click', () => {
-            loginModal.classList.remove('hidden');
-        });
+            openLogin.addEventListener('click', () => {
+                loginModal.classList.remove('hidden');
+            });
 
-        openLoginLink.addEventListener('click', () => {
-            signupModal.classList.remove('hidden');
-            loginModal.classList.add('hidden');
-        });
+            openLoginLink.addEventListener('click', () => {
+                signupModal.classList.remove('hidden');
+                loginModal.classList.add('hidden');
+            });
 
-        closeSignupBtn.addEventListener('click', () => {
-            signupModal.classList.add('hidden');
-        });
+            closeSignupBtn.addEventListener('click', () => {
+                signupModal.classList.add('hidden');
+            });
 
-        closeLoginBtn.addEventListener('click', () => {
-            loginModal.classList.add('hidden');
+            closeLoginBtn.addEventListener('click', () => {
+                loginModal.classList.add('hidden');
+            });
         });
-    });
-</script>
+    </script>
+@endguest
