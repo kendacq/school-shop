@@ -1,5 +1,5 @@
 @php
-    $thisItem = [
+    $frontendItem = [
         'id' => $item->id,
         'name' => $item->name,
         'sku' => $item->sku,
@@ -9,7 +9,7 @@
         'note' => $item->note,
         'category' => $item->category?->name,
         'book' => $item->book,
-        'variations' => $item->variations->map(
+        'variants' => $item->variants->map(
             fn($v) => [
                 'id' => $v->id,
                 'sku' => $v->sku,
@@ -23,7 +23,7 @@
     ];
 @endphp
 
-<div class="item-card" data-item='@json($thisItem)'>
+<div class="item-card" data-item='@json($frontendItem)'>
     <a href="#" class="group block mt-6 open-modal">
         <div class="relative">
             <img src="{{ $item->image_path }}" alt="{{ $item->alt_text ?? $item->name }}"
@@ -39,7 +39,7 @@
         <p class="text-md text-gray-700">₱ {{ number_format($item->price, 2) }}</p>
     </a>
 
-    <div id="productModal-{{ $item->id }}"
+    <div id="product-modal-{{ $item->id }}"
         class="hidden modal fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50 p-4">
         <div class="modal bg-white rounded-lg shadow-lg w-full max-w-5xl p-6 relative overflow-y-auto max-h-[90vh]">
             <button class="close-modal text-xl font-bold absolute top-4 right-4">✕</button>
@@ -69,57 +69,50 @@
                     @endif
 
                     <div class="flex flex-col gap-2">
-                        @if ($item->variations->isNotEmpty())
-                            <p class="text-2xl font-bold variation-price">
+                        @if ($item->variants->isNotEmpty())
+                            <p class="text-2xl font-bold variant-price">
                                 ₱ {{ number_format($item->price, 2) }}
                             </p>
                             <span class="text-xs text-gray-600 italic">*Price may vary based on selected
-                                variation</span>
+                                variant</span>
                         @else
                             <p class="text-2xl font-bold">₱ {{ number_format($item->price, 2) }}</p>
                         @endif
                     </div>
-
-                    <form method="POST">
-                        @csrf
-                        @php
-                            $attributes = [];
-                            foreach ($item->variations as $variation) {
-                                foreach ($variation->attributes as $key => $value) {
-                                    $attributes[$key][] = $value;
-                                }
+                    @php
+                        $attributes = [];
+                        foreach ($item->variants as $variant) {
+                            foreach ($variant->attributes as $key => $value) {
+                                $attributes[$key][] = $value;
                             }
-                            foreach ($attributes as $key => $values) {
-                                $attributes[$key] = array_unique($values);
-                            }
-                        @endphp
+                        }
+                        foreach ($attributes as $key => $values) {
+                            $attributes[$key] = array_unique($values);
+                        }
+                    @endphp
 
-                        <input type="hidden" name="item_id" value="{{ $item->id }}">
-                        <input type="hidden" name="user_id" value="{{ auth()->id() }}">
-                        <input type="hidden" name="variation_id">
-                        @foreach ($attributes as $type => $values)
-                            <div class="mb-4">
-                                <strong>{{ ucfirst($type) }}</strong>
-                                <div class="flex gap-3 mt-1">
-                                    @foreach ($values as $index => $value)
-                                        <label class="cursor-pointer">
-                                            <input type="radio" name="attributes[{{ $type }}]"
-                                                value="{{ $value }}" class="hidden peer variation-option"
-                                                @if ($index === 0) checked @endif>
-                                            <span
-                                                class="px-3 py-1 border rounded peer-checked:bg-blue-500 peer-checked:text-white">
-                                                {{ $value }}
-                                            </span>
-                                        </label>
-                                    @endforeach
-                                </div>
+                    @foreach ($attributes as $type => $values)
+                        <div class="mb-4">
+                            <strong>{{ ucfirst($type) }}</strong>
+                            <div class="flex gap-3 mt-1">
+                                @foreach ($values as $index => $value)
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="attributes[{{ $type }}]"
+                                            value="{{ $value }}" class="hidden peer variant-option"
+                                            @if ($index === 0) checked @endif>
+                                        <span
+                                            class="px-3 py-1 border rounded peer-checked:bg-blue-500 peer-checked:text-white">
+                                            {{ $value }}
+                                        </span>
+                                    </label>
+                                @endforeach
                             </div>
-                        @endforeach
-
-                        <div class="mt-4">
-
                         </div>
+                    @endforeach
 
+                    @guest
+                        <p class="text-center m-4">Log in to Order</p>
+                    @else
                         <div class="flex mt-2 flex-wrap items-center gap-2">
                             <div class="flex items-center space-x-2">
                                 <label class="font-semibold" for="quantity-{{ $item->id }}">Quantity</label>
@@ -136,21 +129,22 @@
                             </div>
                         </div>
 
-                        @guest
-                            <p class="text-center m-4">Log in to Order</p>
-                        @else
-                            <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
-                                <button type="submit" name="action" value="order"
-                                    class="action-btn bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 w-full sm:w-auto">
-                                    Order
-                                </button>
-                                <button type="submit" name="action" value="cart" formaction="{{ route('cart.store') }}"
-                                    class="action-btn bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">
-                                    Add to cart
-                                </button>
-                            </div>
-                        @endguest
-                    </form>
+                        <input class="item-id" type="hidden" name="item_id" value="{{ $item->id }}">
+                        <input class="variant-id" type="hidden" name="variant_id">
+                        <div class="order-error text-red-600 text-sm space-y-1 text-end"></div>
+                        <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
+                            <button
+                                class="order-btn action-btn bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto"
+                                data-route="{{ route('cart.store') }}">
+                                Add to cart
+                            </button>
+                            <button
+                                class="order-btn action-btn bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 w-full sm:w-auto"
+                                data-route="">
+                                Order
+                            </button>
+                        </div>
+                    @endguest
                 </div>
             </div>
         </div>
