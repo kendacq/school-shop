@@ -82,3 +82,9 @@
         passive: false
     });
 </script>
+
+<style>
+    .modal {
+        touch-action: pan-x pan-y;
+    }
+</style>
