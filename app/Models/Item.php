@@ -32,8 +32,8 @@ class Item extends Model
         return $this->hasOne(Book::class);
     }
 
-    public function variations()
+    public function variants()
     {
-        return $this->hasMany(Variation::class);
+        return $this->hasMany(Variant::class);
     }
 }
