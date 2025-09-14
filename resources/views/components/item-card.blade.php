@@ -12,8 +12,12 @@
         'variations' => $item->variations->map(
             fn($v) => [
                 'id' => $v->id,
+                'sku' => $v->sku,
                 'attributes' => $v->attributes,
+                'price' => $v->price,
                 'stock' => $v->stock,
+                'image_path' => $v->image_path,
+                'alt_text' => $v->alt_text,
             ],
         ),
     ];
@@ -64,7 +68,20 @@
                         </div>
                     @endif
 
-                    <form>
+                    <div class="flex flex-col gap-2">
+                        @if ($item->variations->isNotEmpty())
+                            <p class="text-2xl font-bold variation-price">
+                                ₱ {{ number_format($item->price, 2) }}
+                            </p>
+                            <span class="text-xs text-gray-600 italic">*Price may vary based on selected
+                                variation</span>
+                        @else
+                            <p class="text-2xl font-bold">₱ {{ number_format($item->price, 2) }}</p>
+                        @endif
+                    </div>
+
+                    <form method="POST">
+                        @csrf
                         @php
                             $attributes = [];
                             foreach ($item->variations as $variation) {
@@ -77,10 +94,13 @@
                             }
                         @endphp
 
+                        <input type="hidden" name="item_id" value="{{ $item->id }}">
+                        <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+                        <input type="hidden" name="variation_id">
                         @foreach ($attributes as $type => $values)
                             <div class="mb-4">
-                                <strong>{{ ucfirst($type) }}</strong>:
-                                <div class="flex gap-3 mt-2">
+                                <strong>{{ ucfirst($type) }}</strong>
+                                <div class="flex gap-3 mt-1">
                                     @foreach ($values as $index => $value)
                                         <label class="cursor-pointer">
                                             <input type="radio" name="attributes[{{ $type }}]"
@@ -97,36 +117,39 @@
                         @endforeach
 
                         <div class="mt-4">
-                            <span class="stock-display">In Stock: {{ $item->stock ?? '-' }}</span>
+
                         </div>
 
-                        <div class="mt-2">
-                            <label class="font-semibold" for="quantity-{{ $item->id }}">Quantity</label>
-                            <div class="flex items-center space-x-2 mt-2">
+                        <div class="flex mt-2 flex-wrap items-center gap-2">
+                            <div class="flex items-center space-x-2">
+                                <label class="font-semibold" for="quantity-{{ $item->id }}">Quantity</label>
                                 <button type="button"
-                                    class="decrement w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold">-</button>
+                                    class="decrement action-btn w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold">-</button>
                                 <input type="number" id="quantity-{{ $item->id }}" name="quantity" value="1"
                                     min="1" max="{{ $item->stock }}"
                                     class="quantity w-16 text-center border rounded-md [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-moz-appearance]:textfield">
                                 <button type="button"
-                                    class="increment w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold">+</button>
+                                    class="increment action-btn w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold">+</button>
+                            </div>
+                            <div>
+                                <span class="stock-display">Available: {{ $item->stock ?? '-' }}</span>
                             </div>
                         </div>
 
-                        <div class="mt-2 flex items-center gap-4">
-                            <p class="text-2xl font-bold">₱ {{ number_format($item->price, 2) }}</p>
-                        </div>
-
-                        <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
-                            <button type="submit" name="action" value="reserve"
-                                class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 w-full sm:w-auto">
-                                Reserve
-                            </button>
-                            <button type="submit" name="action" value="cart"
-                                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">
-                                Add to cart
-                            </button>
-                        </div>
+                        @guest
+                            <p class="text-center">Log in to Order</p>
+                        @else
+                            <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
+                                <button type="submit" name="action" value="order"
+                                    class="action-btn bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 w-full sm:w-auto">
+                                    Order
+                                </button>
+                                <button type="submit" name="action" value="cart" formaction="{{ route('cart.store') }}"
+                                    class="action-btn bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">
+                                    Add to cart
+                                </button>
+                            </div>
+                        @endguest
                     </form>
                 </div>
             </div>

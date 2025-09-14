@@ -17,6 +17,20 @@
             const modal = document.getElementById(`productModal-${item.id}`);
             const stockDisplay = card.querySelector(".stock-display");
             const quantityInput = card.querySelector(".quantity");
+            const priceElement = card.querySelector(".variation-price");
+            const imageElement = card.querySelector(".variation-image");
+            const actionButtons = card.querySelectorAll(".action-btn");
+
+            function actionButtonsState(state) {
+                actionButtons.forEach(btn => {
+                    btn.disabled = state;
+                    if (state) {
+                        btn.classList.add("opacity-50", "cursor-not-allowed");
+                    } else {
+                        btn.classList.remove("opacity-50", "cursor-not-allowed");
+                    }
+                });
+            }
 
             card.querySelector(".open-modal").addEventListener("click", e => {
                 e.preventDefault();
@@ -29,7 +43,7 @@
                 document.body.classList.remove("overflow-hidden");
             });
 
-            function updateStock() {
+            function updateStockPriceImage() {
                 let selected = {};
                 card.querySelectorAll(".variation-option:checked").forEach(input => {
                     selected[input.name.replace("attributes[", "").replace("]", "")] = input
@@ -40,31 +54,69 @@
                     Object.entries(selected).every(([key, value]) => v.attributes[key] === value)
                 );
 
-                if (match) {
-                    stockDisplay.textContent = "In Stock: " + match.stock;
-                    quantityInput.max = match.stock;
-                    if (parseInt(quantityInput.value) > match.stock) {
-                        quantityInput.value = match.stock;
+                if (item.variations.length > 0) {
+                    if (match) {
+                        if (stockDisplay) {
+                            stockDisplay.textContent = "Available: " + match.stock;
+                        }
+                        if (quantityInput) {
+                            quantityInput.disabled = false;
+                            quantityInput.max = match.stock;
+                            if (parseInt(quantityInput.value) > match.stock) {
+                                quantityInput.value = match.stock;
+                            }
+                        }
+
+                        if (priceElement) {
+                            priceElement.textContent = "₱ " + parseFloat(match.price).toFixed(2);
+                        }
+
+                        if (imageElement && match.image_path) {
+                            imageElement.src = match.image_path;
+                        }
+                        document.querySelector('input[name="variation_id"]').value = match.id;
+                        actionButtonsState(match.stock <= 0);
+                    } else {
+                        if (stockDisplay) {
+                            stockDisplay.textContent = "Not Available";
+                        }
+                        if (quantityInput) {
+                            quantityInput.disabled = true;
+                        }
+                        if (priceElement) {
+                            priceElement.textContent = "Not Available";
+                        }
+                        if (imageElement) {
+                            imageElement.src = item.image_path;
+                        }
+                        actionButtonsState(true);
                     }
                 }
             }
 
             card.querySelectorAll(".variation-option").forEach(input => {
-                input.addEventListener("change", updateStock);
+                input.addEventListener("change", updateStockPriceImage);
             });
 
-            updateStock();
+            updateStockPriceImage();
 
-            card.querySelector(".increment").addEventListener("click", () => {
-                const max = parseInt(quantityInput.max);
-                if (parseInt(quantityInput.value) < max) quantityInput.value = parseInt(
-                    quantityInput.value) + 1;
-            });
-            card.querySelector(".decrement").addEventListener("click", () => {
-                const min = parseInt(quantityInput.min);
-                if (parseInt(quantityInput.value) > min) quantityInput.value = parseInt(
-                    quantityInput.value) - 1;
-            });
+            if (card.querySelector(".increment")) {
+                card.querySelector(".increment").addEventListener("click", () => {
+                    const max = parseInt(quantityInput.max);
+                    if (!quantityInput.disabled && parseInt(quantityInput.value) < max) {
+                        quantityInput.value = parseInt(quantityInput.value) + 1;
+                    }
+                });
+            }
+
+            if (card.querySelector(".decrement")) {
+                card.querySelector(".decrement").addEventListener("click", () => {
+                    const min = parseInt(quantityInput.min);
+                    if (!quantityInput.disabled && parseInt(quantityInput.value) > min) {
+                        quantityInput.value = parseInt(quantityInput.value) - 1;
+                    }
+                });
+            }
         });
     });
 </script>
