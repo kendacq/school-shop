@@ -137,7 +137,7 @@
                         </div>
 
                         @guest
-                            <p class="text-center">Log in to Order</p>
+                            <p class="text-center m-4">Log in to Order</p>
                         @else
                             <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
                                 <button type="submit" name="action" value="order"

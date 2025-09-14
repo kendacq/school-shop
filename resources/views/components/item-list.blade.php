@@ -78,7 +78,7 @@
                         actionButtonsState(match.stock <= 0);
                     } else {
                         if (stockDisplay) {
-                            stockDisplay.textContent = "Not Available";
+                            stockDisplay.textContent = "";
                         }
                         if (quantityInput) {
                             quantityInput.disabled = true;
