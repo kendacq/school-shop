@@ -10,7 +10,8 @@
                 </svg>
             </button>
         </div>
-        <form action="{{ route(name: 'login') }}" method="POST" class="space-y-4 pb-2">
+        <div id="loginError" class="text-red-600 text-center"></div>
+        <form id="loginForm" action="{{ route(name: 'login') }}" method="POST" class="space-y-4 pb-2">
             @csrf
             <input name="personal_id" type="text" placeholder="ID"
                 class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -28,3 +29,40 @@
             account? Sign up here!</button>
     </div>
 </div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const formData = new FormData(form);
+        const errorDiv = document.getElementById('loginError');
+
+        errorDiv.textContent = '';
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': formData.get('_token'),
+                    'Accept': 'application/json',
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                window.location.href = '/';
+            } else {
+                const data = await response.json();
+                if (data.errors) {
+                    const messages = Object.values(data.errors).flat().join(' ');
+                    errorDiv.textContent = messages;
+                } else if (data.message) {
+                    errorDiv.textContent = data.message;
+                }
+            }
+        } catch (error) {
+            errorDiv.textContent = 'Something went wrong. Please try again.';
+        }
+    });
+</script>

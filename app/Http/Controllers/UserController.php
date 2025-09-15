@@ -21,7 +21,7 @@ class UserController extends Controller
             return redirect('/');
         }
 
-        return response()->json(['message' => 'Wrong Email/Password']);
+        return response()->json(['message' => 'Wrong ID/Password'], 422);
     }
 
 
