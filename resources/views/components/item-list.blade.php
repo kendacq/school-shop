@@ -41,7 +41,13 @@
 
                 if (variantOptions.length > 0) {
                     if (variant) {
+                        console.log(variant.stock);
                         priceDisplay.textContent = `₱ ${parseFloat(variant.price).toFixed(2)}`;
+                        if (variant.stock !== undefined) {
+                            stockDisplay.textContent = `Available: ${variant.stock}`;
+                        } else {
+                            stockDisplay.textContent = "Available: -";
+                        }
                         if (quantityInput !== null) {
                             quantityInput.classList.remove('opacity-50', 'cursor-not-allowed');
                             quantityInput.max = variant.stock;
@@ -53,7 +59,10 @@
                         });
                     } else {
                         priceDisplay.textContent = "Not Available";
-                        quantityInput.classList.add('opacity-50', 'cursor-not-allowed');
+                        if (quantityInput !== null) {
+                            quantityInput.classList.add('opacity-50', 'cursor-not-allowed');
+                        }
+                        stockDisplay.textContent = "Available: -";
                         actionBtns.forEach(btn => {
                             btn.classList.add('opacity-50', 'cursor-not-allowed');
                             btn.disabled = true;

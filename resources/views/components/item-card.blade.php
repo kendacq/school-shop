@@ -121,7 +121,7 @@
                                         class="increment action-btn w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-xl font-bold">+</button>
                                 </div>
                                 <div>
-                                    <span class="stock-display">Available: {{ $item->stock ?? '-' }}</span>
+                                    <p class="stock-display">Available: {{ $item->stock ?? '-' }}</p>
                                 </div>
                             </div>
 
@@ -141,7 +141,7 @@
                         @else
                             <div class="flex mt-2 flex-wrap items-center gap-2">
                                 <div>
-                                    <span class="stock-display">Available: {{ $item->stock ?? '-' }}</span>
+                                    <p class="stock-display">Available: {{ $item->stock ?? '-' }}</p>
                                 </div>
                             </div>
                             <p class="text-center m-4">Log in to Order</p>
