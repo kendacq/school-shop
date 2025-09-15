@@ -12,141 +12,92 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        class ProductCard {
-            constructor(card) {
-                this.card = card;
-                this.item = JSON.parse(card.dataset.item);
-                this.quantityInput = card.querySelector('.quantity');
-                this.stockDisplay = card.querySelector('.stock-display');
-                this.priceDisplay = card.querySelector('.variant-price');
-                this.actionButtons = card.querySelectorAll('.order-btn');
-                this.variantOptions = card.querySelectorAll('.variant-option');
-                this.itemInput = card.querySelector('.item-id');
-                this.variantInput = card.querySelector('.variant-id');
+        document.querySelectorAll('.item-card').forEach(card => {
+            const item = JSON.parse(card.dataset.item);
+            const modal = card.querySelector('.modal');
+            const quantityInput = card.querySelector('.quantity');
+            const stockDisplay = card.querySelector('.stock-display');
+            const priceDisplay = card.querySelector('.price');
+            const variantOptions = card.querySelectorAll('.variant-option');
+            const actionBtns = card.querySelectorAll('.action-btn');
+            const openModalBtn = card.querySelector('.open-modal');
+            const closeModalBtn = card.querySelector('.close-modal');
+            const addToCartBtn = card.querySelector('.cart-btn');
 
-                this.bindEvents();
-                this.updateUI();
-            }
-
-            bindEvents() {
-                this.variantOptions.forEach(input =>
-                    input.addEventListener('change', () => this.updateUI())
-                );
-
-                this.card.querySelector('.increment')?.addEventListener('click', () => this.increment());
-                this.card.querySelector('.decrement')?.addEventListener('click', () => this.decrement());
-
-                this.actionButtons.forEach(btn =>
-                    btn.addEventListener('click', e => this.addToCart(e, btn))
-                );
-
-                this.card.querySelector('.open-modal')?.addEventListener('click', e => {
-                    e.preventDefault();
-                    this.card.querySelector('.modal').classList.remove('hidden');
-                    document.body.classList.add('overflow-hidden');
+            function updateUI() {
+                const selectedAttributes = {};
+                variantOptions.forEach(opt => {
+                    if (opt.checked) {
+                        const attrName = opt.dataset.attribute;
+                        selectedAttributes[attrName] = opt.value;
+                    }
                 });
-                this.card.querySelector('.close-modal')?.addEventListener('click', () => {
-                    this.card.querySelector('.modal').classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
-                });
-            }
 
-            updateUI() {
-                const selectedAttributes = Object.fromEntries(
-                    [...this.variantOptions].filter(i => i.checked)
-                    .map(i => [i.name.replace(/attributes\[|\]/g, ''), i.value])
-                );
-
-                let match = this.item.variants.find(v =>
-                    Object.entries(selectedAttributes).every(([k, val]) => v.attributes[k] === val)
-                );
-
-                if (!match && this.item.variants.length === 0) match = {
-                    id: null,
-                    stock: this.item.stock,
-                    price: this.item.price,
-                    image_path: this.item.image_path
-                };
-
-                if (match) {
-                    this.itemInput.value = this.item.id;
-                    this.variantInput.value = match.id || '';
-
-                    this.stockDisplay.textContent = `Available: ${match.stock}`;
-                    this.quantityInput.max = match.stock;
-                    this.priceDisplay && (this.priceDisplay.textContent =
-                        `₱ ${parseFloat(match.price).toFixed(2)}`);
-                    this.quantityInput.disabled = match.stock <= 0;
-                    this.setButtonsEnabled(match.stock > 0);
-                } else {
-                    this.stockDisplay.textContent = '';
-                    this.quantityInput.disabled = true;
-                    this.priceDisplay && (this.priceDisplay.textContent = 'Not Available');
-                    this.setButtonsEnabled(false);
-                }
-            }
-
-            increment() {
-                if (parseInt(this.quantityInput.value) < parseInt(this.quantityInput.max)) this
-                    .quantityInput.value++;
-            }
-
-            decrement() {
-                if (parseInt(this.quantityInput.value) > parseInt(this.quantityInput.min)) this
-                    .quantityInput.value--;
-            }
-
-            setButtonsEnabled(enabled) {
-                this.actionButtons.forEach(btn => {
-                    btn.disabled = !enabled;
-                    btn.classList.toggle('opacity-50', !enabled);
-                    btn.classList.toggle('cursor-not-allowed', !enabled);
-                });
-            }
-
-            async addToCart(e, btn) {
-                e.preventDefault();
-
-                const itemId = this.itemInput.value;
-                const variantId = this.variantInput.value || null;
-                const quantity = parseInt(this.quantityInput.value) || 1;
-
-                const payload = {
-                    item_id: itemId,
-                    variant_id: variantId,
-                    quantity
-                };
-
-                const route = btn.dataset.route;
-                const errorContainer = this.card.querySelector('.order-error');
-                errorContainer && (errorContainer.textContent = '');
-                btn.disabled = true;
-
-                try {
-                    const res = await fetch(route, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(payload)
+                const variant = item.variants.find(v => {
+                    return Object.entries(selectedAttributes).every(([attr, value]) => {
+                        return v.attributes[attr] === value;
                     });
+                });
 
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error || 'Something went wrong');
-
-                    alert('Item added to cart!');
-                    this.quantityInput.value = 1;
-                } catch (err) {
-                    console.error(err);
-                    errorContainer && (errorContainer.textContent = err.message || 'Network error');
-                } finally {
-                    btn.disabled = false;
+                if (variantOptions.length > 0) {
+                    if (variant) {
+                        priceDisplay.textContent = `₱ ${parseFloat(variant.price).toFixed(2)}`;
+                        if (quantityInput !== null) {
+                            quantityInput.classList.remove('opacity-50', 'cursor-not-allowed');
+                            quantityInput.max = variant.stock;
+                            quantityInput.disabled = variant.stock <= 0;
+                        }
+                        actionBtns.forEach(btn => {
+                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                            btn.disabled = false;
+                        });
+                    } else {
+                        priceDisplay.textContent = "Not Available";
+                        quantityInput.classList.add('opacity-50', 'cursor-not-allowed');
+                        actionBtns.forEach(btn => {
+                            btn.classList.add('opacity-50', 'cursor-not-allowed');
+                            btn.disabled = true;
+                        });
+                    }
                 }
             }
-        }
 
-        document.querySelectorAll('.item-card').forEach(card => new ProductCard(card));
+            function increment() {
+                const current = parseInt(quantityInput.value) || 1;
+                const max = parseInt(quantityInput.max) || 1;
+                if (current < max) {
+                    quantityInput.value = current + 1;
+                }
+            }
+
+            function decrement() {
+                const current = parseInt(quantityInput.value) || 1;
+                const min = parseInt(quantityInput.min) || 1;
+                if (current > min) {
+                    quantityInput.value = current - 1;
+                }
+            }
+
+            function openModal(e) {
+                e.preventDefault();
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+
+            function addToCart() {}
+
+            variantOptions.forEach(opt => opt.addEventListener('change', updateUI));
+            card.querySelector('.increment')?.addEventListener('click', increment);
+            card.querySelector('.decrement')?.addEventListener('click', decrement);
+            openModalBtn?.addEventListener('click', openModal);
+            closeModalBtn?.addEventListener('click', closeModal);
+
+            updateUI();
+        });
     });
 </script>
