@@ -11,7 +11,7 @@ class ShopListController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Item::with('category', 'variations');
+        $query = Item::with('category', 'variants');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -33,7 +33,7 @@ class ShopListController extends Controller
 
     public function items(Request $request)
     {
-        $query = Item::with('category', 'variations');
+        $query = Item::with('category', 'variants');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {

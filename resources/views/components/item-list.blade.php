@@ -11,112 +11,102 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll(".item-card").forEach(card => {
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.item-card').forEach(card => {
             const item = JSON.parse(card.dataset.item);
-            const modal = document.getElementById(`productModal-${item.id}`);
-            const stockDisplay = card.querySelector(".stock-display");
-            const quantityInput = card.querySelector(".quantity");
-            const priceElement = card.querySelector(".variation-price");
-            const imageElement = card.querySelector(".variation-image");
-            const actionButtons = card.querySelectorAll(".action-btn");
+            const modal = card.querySelector('.modal');
+            const quantityInput = card.querySelector('.quantity');
+            const stockDisplay = card.querySelector('.stock-display');
+            const priceDisplay = card.querySelector('.price');
+            const variantOptions = card.querySelectorAll('.variant-option');
+            const actionBtns = card.querySelectorAll('.action-btn');
+            const openModalBtn = card.querySelector('.open-modal');
+            const closeModalBtn = card.querySelector('.close-modal');
+            const addToCartBtn = card.querySelector('.cart-btn');
 
-            function actionButtonsState(state) {
-                actionButtons.forEach(btn => {
-                    btn.disabled = state;
-                    if (state) {
-                        btn.classList.add("opacity-50", "cursor-not-allowed");
-                    } else {
-                        btn.classList.remove("opacity-50", "cursor-not-allowed");
+            function updateUI() {
+                const selectedAttributes = {};
+                variantOptions.forEach(opt => {
+                    if (opt.checked) {
+                        const attrName = opt.dataset.attribute;
+                        selectedAttributes[attrName] = opt.value;
                     }
                 });
-            }
 
-            card.querySelector(".open-modal").addEventListener("click", e => {
-                e.preventDefault();
-                modal.classList.remove("hidden");
-                document.body.classList.add("overflow-hidden");
-            });
-
-            modal.querySelector(".close-modal").addEventListener("click", () => {
-                modal.classList.add("hidden");
-                document.body.classList.remove("overflow-hidden");
-            });
-
-            function updateStockPriceImage() {
-                let selected = {};
-                card.querySelectorAll(".variation-option:checked").forEach(input => {
-                    selected[input.name.replace("attributes[", "").replace("]", "")] = input
-                        .value;
+                const variant = item.variants.find(v => {
+                    return Object.entries(selectedAttributes).every(([attr, value]) => {
+                        return v.attributes[attr] === value;
+                    });
                 });
 
-                const match = item.variations.find(v =>
-                    Object.entries(selected).every(([key, value]) => v.attributes[key] === value)
-                );
-
-                if (item.variations.length > 0) {
-                    if (match) {
-                        if (stockDisplay) {
-                            stockDisplay.textContent = "Available: " + match.stock;
+                if (variantOptions.length > 0) {
+                    if (variant) {
+                        console.log(variant.stock);
+                        priceDisplay.textContent = `₱ ${parseFloat(variant.price).toFixed(2)}`;
+                        if (variant.stock !== undefined) {
+                            stockDisplay.textContent = `Available: ${variant.stock}`;
+                        } else {
+                            stockDisplay.textContent = "Available: -";
                         }
-                        if (quantityInput) {
-                            quantityInput.disabled = false;
-                            quantityInput.max = match.stock;
-                            if (parseInt(quantityInput.value) > match.stock) {
-                                quantityInput.value = match.stock;
-                            }
+                        if (quantityInput !== null) {
+                            quantityInput.classList.remove('opacity-50', 'cursor-not-allowed');
+                            quantityInput.max = variant.stock;
+                            quantityInput.disabled = variant.stock <= 0;
                         }
-
-                        if (priceElement) {
-                            priceElement.textContent = "₱ " + parseFloat(match.price).toFixed(2);
-                        }
-
-                        if (imageElement && match.image_path) {
-                            imageElement.src = match.image_path;
-                        }
-                        document.querySelector('input[name="variation_id"]').value = match.id;
-                        actionButtonsState(match.stock <= 0);
+                        actionBtns.forEach(btn => {
+                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                            btn.disabled = false;
+                        });
                     } else {
-                        if (stockDisplay) {
-                            stockDisplay.textContent = "";
+                        priceDisplay.textContent = "Not Available";
+                        if (quantityInput !== null) {
+                            quantityInput.classList.add('opacity-50', 'cursor-not-allowed');
                         }
-                        if (quantityInput) {
-                            quantityInput.disabled = true;
-                        }
-                        if (priceElement) {
-                            priceElement.textContent = "Not Available";
-                        }
-                        if (imageElement) {
-                            imageElement.src = item.image_path;
-                        }
-                        actionButtonsState(true);
+                        stockDisplay.textContent = "Available: -";
+                        actionBtns.forEach(btn => {
+                            btn.classList.add('opacity-50', 'cursor-not-allowed');
+                            btn.disabled = true;
+                        });
                     }
                 }
             }
 
-            card.querySelectorAll(".variation-option").forEach(input => {
-                input.addEventListener("change", updateStockPriceImage);
-            });
-
-            updateStockPriceImage();
-
-            if (card.querySelector(".increment")) {
-                card.querySelector(".increment").addEventListener("click", () => {
-                    const max = parseInt(quantityInput.max);
-                    if (!quantityInput.disabled && parseInt(quantityInput.value) < max) {
-                        quantityInput.value = parseInt(quantityInput.value) + 1;
-                    }
-                });
+            function increment() {
+                const current = parseInt(quantityInput.value) || 1;
+                const max = parseInt(quantityInput.max) || 1;
+                if (current < max) {
+                    quantityInput.value = current + 1;
+                }
             }
 
-            if (card.querySelector(".decrement")) {
-                card.querySelector(".decrement").addEventListener("click", () => {
-                    const min = parseInt(quantityInput.min);
-                    if (!quantityInput.disabled && parseInt(quantityInput.value) > min) {
-                        quantityInput.value = parseInt(quantityInput.value) - 1;
-                    }
-                });
+            function decrement() {
+                const current = parseInt(quantityInput.value) || 1;
+                const min = parseInt(quantityInput.min) || 1;
+                if (current > min) {
+                    quantityInput.value = current - 1;
+                }
             }
+
+            function openModal(e) {
+                e.preventDefault();
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+
+            function addToCart() {}
+
+            variantOptions.forEach(opt => opt.addEventListener('change', updateUI));
+            card.querySelector('.increment')?.addEventListener('click', increment);
+            card.querySelector('.decrement')?.addEventListener('click', decrement);
+            openModalBtn?.addEventListener('click', openModal);
+            closeModalBtn?.addEventListener('click', closeModal);
+
+            updateUI();
         });
     });
 </script>
