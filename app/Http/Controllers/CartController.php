@@ -102,19 +102,19 @@ class CartController extends Controller
         ]);
     }
 
-
-
-    public function update(Request $request, $itemId)
+    public function update(Request $request)
     {
         $request->validate([
-            'variant_id' => 'nullable|integer|exists:variants,id',
-            'quantity' => 'required|integer|min:0'
+            'item_id'    => ['required', 'integer', 'exists:items,id'],
+            'variant_id' => ['nullable', 'integer', 'exists:variants,id'],
+            'quantity' => ['required', 'integer', 'min:0']
         ]);
 
         $userId = $request->user()->id;
         $cart = Cart::where('user_id', $userId)->where('status', 'active')->first();
         if (!$cart) return response()->json(['message' => 'Cart not found'], 404);
 
+        $itemId = $request->item_id;
         $variantId = $request->variant_id ?? null;
         $items = $cart->items ?? [];
         $updated = false;
