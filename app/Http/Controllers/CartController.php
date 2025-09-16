@@ -97,8 +97,8 @@ class CartController extends Controller
         $cart->save();
 
         return response()->json([
-            'cart' => $cart,
-            'total' => collect($cart->items)->sum(fn($i) => $i['quantity'] * $i['price']), // 🔥 auto-total
+            'success' => true,
+            'cart' => $cart
         ]);
     }
 
@@ -130,7 +130,7 @@ class CartController extends Controller
                     : Item::find($itemId)->stock;
 
                 if ($request->quantity > $stock) {
-                    return response()->json(['error' => 'Not enough stock'], 400);
+                    return response()->json(['error' => 'Cannot exceed available stock'], 400);
                 }
 
                 if ($request->quantity <= 0) {
@@ -150,19 +150,26 @@ class CartController extends Controller
         $cart->items = array_values($items);
         $cart->save();
 
-        return response()->json($cart);
+        return response()->json([
+            'success' => true,
+            'cart' => $cart,
+            'stock' => $stock,
+            'total' => collect($cart->items)->sum(fn($i) => $i['quantity'] * $i['price']),
+        ]);
     }
 
-    public function destroy(Request $request, $itemId)
+    public function destroy(Request $request)
     {
         $request->validate([
-            'variant_id' => 'nullable|integer|exists:variants,id'
+            'item_id'    => ['required', 'integer', 'exists:items,id'],
+            'variant_id' => ['nullable', 'integer', 'exists:variants,id'],
         ]);
 
         $userId = $request->user()->id;
         $cart = Cart::where('user_id', $userId)->where('status', 'active')->first();
         if (!$cart) return response()->json(['message' => 'Cart not found'], 404);
 
+        $itemId = $request->item_id;
         $variantId = $request->variant_id ?? null;
         $items = $cart->items ?? [];
 
