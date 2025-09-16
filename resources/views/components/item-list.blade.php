@@ -25,23 +25,10 @@
             const addToCartBtn = card.querySelector('.cart-btn');
 
             function updateUI() {
-                const selectedAttributes = {};
-                variantOptions.forEach(opt => {
-                    if (opt.checked) {
-                        const attrName = opt.dataset.attribute;
-                        selectedAttributes[attrName] = opt.value;
-                    }
-                });
-
-                const variant = item.variants.find(v => {
-                    return Object.entries(selectedAttributes).every(([attr, value]) => {
-                        return v.attributes[attr] === value;
-                    });
-                });
+                const variant = findVariant();
 
                 if (variantOptions.length > 0) {
                     if (variant) {
-                        console.log(variant.stock);
                         priceDisplay.textContent = `₱ ${parseFloat(variant.price).toFixed(2)}`;
                         if (variant.stock !== undefined) {
                             stockDisplay.textContent = `Available: ${variant.stock}`;
@@ -98,13 +85,69 @@
                 document.body.classList.remove('overflow-hidden');
             }
 
-            function addToCart() {}
+            function addToCart() {
+                const quantity = parseInt(quantityInput.value) || 1;
+                const payload = {
+                    item_id: item.id,
+                    quantity
+                };
+
+                if (variantOptions.length > 0) {
+                    const variant = findVariant();
+                    payload.variant_id = variant.id;
+                }
+
+                fetch('/cart', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Item added to cart!');
+                            closeModal();
+                        } else {
+                            alert(data.message || 'Failed to add item to cart.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while adding the item to cart.');
+                    });
+            }
+
+            function findVariant() {
+                const selectedAttributes = {};
+                variantOptions.forEach(opt => {
+                    if (opt.checked) {
+                        const attrName = opt.dataset.attribute;
+                        selectedAttributes[attrName] = opt.value;
+                    }
+                });
+
+                const variant = item.variants.find(v => {
+                    return Object.entries(selectedAttributes).every(([attr, value]) => {
+                        return v.attributes[attr] === value;
+                    });
+                });
+
+                return variant;
+            }
 
             variantOptions.forEach(opt => opt.addEventListener('change', updateUI));
-            card.querySelector('.increment')?.addEventListener('click', increment);
-            card.querySelector('.decrement')?.addEventListener('click', decrement);
-            openModalBtn?.addEventListener('click', openModal);
+            card.querySelector(
+                '.increment')?.addEventListener('click', increment);
+            card.querySelector('.decrement')
+                ?.addEventListener('click', decrement);
+            openModalBtn?.addEventListener('click',
+                openModal);
             closeModalBtn?.addEventListener('click', closeModal);
+            addToCartBtn
+                ?.addEventListener('click', addToCart);
 
             updateUI();
         });
