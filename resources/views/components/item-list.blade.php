@@ -92,7 +92,7 @@
                 let payload = {
                     item_id: item.id,
                     quantity: quantityInput.value
-                }
+                };
 
                 if (variantExists) {
                     payload.variant_id = getVariant().id;
