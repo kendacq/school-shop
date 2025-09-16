@@ -23,11 +23,14 @@
             const openModalBtn = card.querySelector('.open-modal');
             const closeModalBtn = card.querySelector('.close-modal');
             const addToCartBtn = card.querySelector('.cart-btn');
+            const variantExists = variantOptions.length > 0;
+
+            console.log(item);
 
             function updateUI() {
-                const variant = findVariant();
+                const variant = getVariant();
 
-                if (variantOptions.length > 0) {
+                if (variantExists) {
                     if (variant) {
                         priceDisplay.textContent = `₱ ${parseFloat(variant.price).toFixed(2)}`;
                         if (variant.stock !== undefined) {
@@ -86,41 +89,39 @@
             }
 
             function addToCart() {
-                const quantity = parseInt(quantityInput.value) || 1;
-                const payload = {
+                let payload = {
                     item_id: item.id,
-                    quantity
+                    quantity: quantityInput.value
                 };
 
-                if (variantOptions.length > 0) {
-                    const variant = findVariant();
-                    payload.variant_id = variant.id;
+                if (variantExists) {
+                    payload.variant_id = getVariant().id;
                 }
 
-                fetch('/cart', {
+                console.log(payload);
+
+                fetch(addToCartBtn.dataset.route, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                         },
                         body: JSON.stringify(payload)
                     })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success) {
-                            alert('Item added to cart!');
-                            closeModal();
+                        if (data.error) {
+
                         } else {
-                            alert(data.message || 'Failed to add item to cart.');
+                            alert('Item added to cart!');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('An error occurred while adding the item to cart.');
                     });
             }
 
-            function findVariant() {
+            function getVariant() {
                 const selectedAttributes = {};
                 variantOptions.forEach(opt => {
                     if (opt.checked) {
@@ -129,13 +130,11 @@
                     }
                 });
 
-                const variant = item.variants.find(v => {
+                return variant = item.variants.find(v => {
                     return Object.entries(selectedAttributes).every(([attr, value]) => {
                         return v.attributes[attr] === value;
                     });
                 });
-
-                return variant;
             }
 
             variantOptions.forEach(opt => opt.addEventListener('change', updateUI));
@@ -146,8 +145,7 @@
             openModalBtn?.addEventListener('click',
                 openModal);
             closeModalBtn?.addEventListener('click', closeModal);
-            addToCartBtn
-                ?.addEventListener('click', addToCart);
+            addToCartBtn?.addEventListener('click', addToCart);
 
             updateUI();
         });
