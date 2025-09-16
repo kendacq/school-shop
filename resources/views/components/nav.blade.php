@@ -2,17 +2,21 @@
     <div class="py-2 lg:mx-2 xl:mx-2">
         <x-signup />
         <x-login />
-        <nav role="navigation" aria-label="Main navigation">
-            <div class="flex justify-end p-2">
-                <div class="lg:block hidden mr-auto">
-                    <a href="{{ route('index') }}" class="lg:inline-block font-bold mx-1 p-1">
+        <nav role="navigation" aria-label="Main navigation" class="bg-white shadow-md">
+            <div class="container mx-auto flex flex-wrap items-center justify-between p-4">
+                <div class="mr-auto">
+                    <a href="{{ route('index') }}" class="lg:hidden text-lg font-bold mx-1 p-1 hover:text-gray-700">
+                        LOGO
+                    </a>
+                    <a href="{{ route('index') }}"
+                        class="hidden lg:inline-block text-xl font-bold mx-1 p-1 hover:text-gray-700">
                         LOGO
                     </a>
                 </div>
                 @auth
-                    <div class="px-2">
+                    <div class="flex flex-wrap items-center gap-2">
                         <a href="{{ route('cart.index') }}"
-                            class="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold h-10 min-w-[45px] px-4 rounded-sm justify-center"
+                            class="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold h-10 min-w-[45px] px-4 rounded-sm justify-center transition"
                             aria-label="View cart">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
@@ -23,10 +27,8 @@
                                 <circle cx="18" cy="19" r="1.4" />
                             </svg>
                         </a>
-                    </div>
-                    <div class="px-2">
                         <a href="#profile"
-                            class="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-bold h-10 min-w-[100px] px-4 rounded-sm justify-center">
+                            class="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-bold h-10 min-w-[100px] px-4 rounded-sm justify-center transition">
                             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
                                 stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Profile">
                                 <circle cx="12" cy="8" r="4" />
@@ -34,24 +36,22 @@
                             </svg>
                             <p>{{ auth()->user()->first_name }}</p>
                         </a>
-                    </div>
-                    <div class="px-2">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"
-                                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
+                                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition">
                                 LOG OUT
                             </button>
                         </form>
                     </div>
                 @else
-                    <div class="sm:justify-self-end text-md px-2">
+                    <div class="flex flex-wrap items-center gap-2">
                         <button id="signupModalBtn"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition">
                             SIGN UP
                         </button>
                         <button id="loginModalBtn"
-                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full">
+                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition">
                             LOG IN
                         </button>
                     </div>
