@@ -6,6 +6,7 @@
 
     <body>
         <x-nav />
+        <div id="toast-container" class="fixed bottom-4 right-4 z-55 space-y-3"></div>
         <div class="container mx-auto p-6">
             <form id="filterForm" class="mb-6">
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
