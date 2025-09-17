@@ -104,16 +104,18 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .content
                         },
                         body: JSON.stringify(payload)
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.error) {
-
+                            showToast('Error', data.error, 'error');
                         } else {
-                            alert('Item added to cart!');
+                            showToast('Success', item.name+" added to cart!", 'success');
+                            closeModal();
                         }
                     })
                     .catch(error => {
@@ -135,6 +137,50 @@
                         return v.attributes[attr] === value;
                     });
                 });
+            }
+
+            function showToast(
+                title = '',
+                message = '',
+                type = 'info',
+                duration = 4000
+            ) {
+                const container = document.getElementById('toast-container');
+
+                const toast = document.createElement('div');
+                toast.className =
+                    `max-w-sm w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black/5 border-l-4 p-4 flex items-start space-x-3 transform transition-all duration-300 ease-out opacity-0 translate-y-2`;
+
+                const colors = {
+                    success: 'border-green-500',
+                    error: 'border-red-500',
+                    warning: 'border-yellow-500',
+                    info: 'border-blue-500'
+                };
+                toast.classList.add(colors[type] || colors.info);
+
+                const icons = {
+                    success: `<svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`,
+                    error: `<svg class="h-6 w-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`,
+                    warning: `<svg class="h-6 w-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>`,
+                    info: `<svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"/></svg>`
+                };
+
+                toast.innerHTML =
+                    `<div class="flex-shrink-0">${icons[type] || icons.info}</div><div class="flex-1"><p class="text-sm font-medium text-gray-900 dark:text-gray-100">${title}</p><p class="mt-1 text-sm text-gray-600 dark:text-gray-300">${message}</p></div>`;
+
+                container.appendChild(toast);
+
+                requestAnimationFrame(() => {
+                    toast.classList.remove('opacity-0', 'translate-y-2');
+                    toast.classList.add('opacity-100', 'translate-y-0');
+                });
+
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100', 'translate-y-0');
+                    toast.classList.add('opacity-0', 'translate-y-2');
+                    setTimeout(() => toast.remove(), 200);
+                }, duration);
             }
 
             variantOptions.forEach(opt => opt.addEventListener('change', updateUI));

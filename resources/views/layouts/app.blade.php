@@ -10,6 +10,7 @@
 </head>
 
 <body>
+    <div id="toast-container" class="fixed bottom-4 right-4 z-55 space-y-3"></div>
     @yield('content')
 
 </body>
