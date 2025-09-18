@@ -114,7 +114,7 @@
                         if (data.error) {
                             showToast('Error', data.error, 'error');
                         } else {
-                            showToast('Success', item.name+" added to cart!", 'success');
+                            showToast('Success', item.name + " added to cart!", 'success');
                             closeModal();
                         }
                     })
@@ -132,7 +132,7 @@
                     }
                 });
 
-                return variant = item.variants.find(v => {
+                return item.variants.find(v => {
                     return Object.entries(selectedAttributes).every(([attr, value]) => {
                         return v.attributes[attr] === value;
                     });

@@ -26,13 +26,6 @@
     </div>
 @endsection
 
-<style>
-    html,
-    body {
-        touch-action: pan-x pan-y;
-    }
-</style>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('searchInput');
@@ -42,7 +35,7 @@
             const search = searchInput.value;
             const category = categorySelect.value;
 
-            fetch(`/items?search=${search}&category=${category}`)
+            fetch(`/?search=${search}&category=${category}`)
                 .then(res => res.text())
                 .then(html => {
                     document.getElementById('items-container').innerHTML = html;
@@ -80,6 +73,11 @@
 
 <style>
     .modal {
+        touch-action: pan-x pan-y;
+    }
+
+    html,
+    body {
         touch-action: pan-x pan-y;
     }
 </style>
