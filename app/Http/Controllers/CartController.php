@@ -90,6 +90,7 @@ class CartController extends Controller
                 'attributes' => $attributes,
                 'quantity'   => $validated['quantity'],
                 'price'      => $price,
+                'stock'      => $stock
             ];
         }
 
@@ -154,7 +155,6 @@ class CartController extends Controller
             'success' => true,
             'cart' => $cart,
             'stock' => $stock,
-            'total' => collect($cart->items)->sum(fn($i) => $i['quantity'] * $i['price']),
         ]);
     }
 

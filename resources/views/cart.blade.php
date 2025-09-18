@@ -4,38 +4,105 @@
 
 @section('content')
     <x-nav />
-    <div class="container mx-auto p-6">
-        @if (!empty($cart->items))
-            @foreach ($cart->items as $item)
-                <div class="cart-item bg-white shadow-md rounded-lg p-4 mb-6" data-item='@json($item)'>
-                    <p class="error-display text-red-600 text-sm mb-2"></p>
-                    <h2 class="text-lg font-semibold mb-2">{{ $item['name'] }}</h2>
-                    <div class="flex items-center gap-2 mb-2 flex-wrap">
-                        <label class="font-medium">Quantity:</label>
-                        <input type="number" value="{{ $item['quantity'] }}" min="1"
-                            class="quantity-input w-20 border rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            data-route="{{ route('cart.update') }}">
-                    </div>
-                    <p class="mb-2"><strong>Unit Price:</strong> ₱ {{ $item['price'] }}</p>
-                    <p class="total-price mb-2"><strong>Total Price:</strong> ₱
-                        <span>{{ $item['price'] * $item['quantity'] }}</span>
-                    </p>
-                    @if ($item['variant_id'])
-                        <div class="mb-2">
-                            @foreach ($item['attributes'] as $key => $value)
-                                <p><strong>{{ ucwords($key) }}:</strong> {{ $value }}</p>
+    <div class="bg-white">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+            <h1 class="text-3xl font-bold tracking-tight text-gray-900">Shopping Cart</h1>
+
+            <form class="mt-12 grid grid-cols-1 lg:grid-cols-12 lg:gap-x-12 xl:gap-x-16" method="POST" action="">
+                @csrf
+
+                <!-- Cart Items -->
+                <section aria-labelledby="cart-heading" class="lg:col-span-7">
+                    <h2 id="cart-heading" class="sr-only">Items in your shopping cart</h2>
+
+                    @if (!empty($cart->items))
+                        <ul role="list" class="divide-y divide-gray-200 border-b border-t border-gray-200">
+                            @foreach ($cart->items as $item)
+                                <li class="flex py-6 sm:py-10 cart-item bg-white" data-item='@json($item)'>
+                                    <div class="flex-shrink-0">
+                                        <img src="" alt=""
+                                            class="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48">
+                                    </div>
+
+                                    <div class="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
+                                        <div class="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
+                                            <div>
+                                                <h3 class="text-sm font-medium text-gray-700">
+                                                    {{ $item['name'] }}
+                                                </h3>
+
+                                                @if ($item['variant_id'])
+                                                    <div class="mt-1 text-sm text-gray-500">
+                                                        @foreach ($item['attributes'] as $key => $value)
+                                                            <p><strong>{{ ucwords($key) }}:</strong> {{ $value }}</p>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+
+                                                <p class="mt-1 text-sm font-medium text-gray-900">₱
+                                                    {{ number_format($item['price'], 2) }}</p>
+                                            </div>
+
+                                            <div class="mt-4 sm:mt-0 sm:pr-9">
+                                                <label class="sr-only">Quantity</label>
+                                                <input type="number" value="{{ $item['quantity'] }}" min="1"
+                                                    max="{{ $item['stock'] }}"
+                                                    class="quantity-input block w-20 rounded-md border border-gray-300 py-1.5 text-base leading-5 text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                                                    data-route="{{ route('cart.update') }}" />
+                                                <p class="mt-1 text-sm text-gray-500"><strong>Available:</strong> {{ $item['stock'] }}</p>
+                                                <div class="absolute right-0 top-0">
+                                                    <button type="button"
+                                                        class="delete-btn inline-flex -m-2 p-2 text-red-600 hover:text-red-800"
+                                                        data-route="{{ route('cart.destroy') }}">
+                                                        <span class="sr-only">Remove</span>
+                                                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd"
+                                                                d="M6.28 5.22a.75.75 0 011.06 0L10 7.94l2.72-2.72a.75.75 0 111.06 1.06L11.06 9l2.72 2.72a.75.75 0 01-1.06 1.06L10 10.06l-2.72 2.72a.75.75 0 01-1.06-1.06L8.94 9 6.22 6.28a.75.75 0 010-1.06z"
+                                                                clip-rule="evenodd" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <p class="mt-4 text-sm font-medium text-gray-900">
+                                            Subtotal: ₱
+                                            <span>{{ number_format($item['price'] * $item['quantity'], 2) }}</span>
+                                        </p>
+                                    </div>
+                                </li>
                             @endforeach
-                        </div>
+                        </ul>
+                    @else
+                        <p class="text-center text-gray-500">Your cart is empty.</p>
                     @endif
-                    <button class="delete-btn bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-                        data-route="{{ route('cart.destroy') }}">Remove</button>
-                    <hr class="my-4 border-gray-300">
-                </div>
-            @endforeach
-        @else
-            <p class="text-center text-gray-500">Your cart is empty.</p>
-        @endif
+                </section>
+
+                <!-- Order Summary -->
+                <section aria-labelledby="summary-heading"
+                    class="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8">
+                    <h2 id="summary-heading" class="text-lg font-medium text-gray-900">Order summary</h2>
+
+                    <dl class="mt-6 space-y-4">
+                        <div class="flex items-center justify-between border-t border-gray-200 pt-4">
+                            <dt class="text-base font-medium text-gray-900">Order total</dt>
+                            <dd class="order-total text-base font-medium text-gray-900">₱
+                                {{ number_format(collect($cart->items)->sum(fn($item) => $item['price'] * $item['quantity']), 2) }}
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <div class="mt-6">
+                        <button type="submit"
+                            class="w-full rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            Checkout
+                        </button>
+                    </div>
+                </section>
+            </form>
+        </div>
     </div>
+
 @endsection
 
 <script>
@@ -44,11 +111,8 @@
             const item = JSON.parse(cartItem.dataset.item);
             const quantityInput = cartItem.querySelector('.quantity-input');
             const deleteBtn = cartItem.querySelector('.delete-btn');
-            const errorText = cartItem.querySelector('.error-display');
-            const totalPrice = cartItem.querySelector('.total-price');
 
             function updateItemQty() {
-                errorText.textContent = '';
                 let payload = {
                     item_id: item.item_id,
                     quantity: quantityInput.value
@@ -70,10 +134,9 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.error) {
-                            errorText.textContent = data.error;
+                            showToast('Error', data.error, 'error');
                         } else {
-                            quantityInput.setAttribute('max', data.stock);
-                            totalPrice.querySelector('span').textContent = data.total;
+                            updateCartTotal();
                         }
                     })
                     .catch(error => {
@@ -82,7 +145,6 @@
             }
 
             function deleteItem() {
-                errorText.textContent = '';
                 let payload = {
                     item_id: item.item_id,
                 };
@@ -106,12 +168,24 @@
                             showToast('Error', data.error, 'error');
                         } else {
                             cartItem.remove();
+                            updateCartTotal();
                             showToast('Success', item.name + ' removed from cart', 'success');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
                     });
+            }
+
+            function updateCartTotal() {
+                let total = 0;
+                document.querySelectorAll('.cart-item').forEach(cartItem => {
+                    const item = JSON.parse(cartItem.dataset.item);
+                    const qty = parseInt(cartItem.querySelector('.quantity-input')?.value || 0,
+                        10);
+                    total += item.price * qty;
+                });
+                document.querySelector('.order-total').textContent = '₱ ' + total.toFixed(2);
             }
 
             function showToast(
