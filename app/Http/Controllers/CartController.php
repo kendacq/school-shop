@@ -41,10 +41,14 @@ class CartController extends Controller
             $variant    = Variant::findOrFail($validated['variant_id']);
             $stock      = $variant->stock;
             $price      = $variant->price;
+            $image      = $variant->image_path;
+            $alt        = $variant->alt_text;
             $attributes = $variant->attributes;
         } else {
             $stock      = $item->stock;
             $price      = $item->price;
+            $image      = $item->image_path;
+            $alt        = $item->alt_text;
             $attributes = [];
         }
 
@@ -90,7 +94,9 @@ class CartController extends Controller
                 'attributes' => $attributes,
                 'quantity'   => $validated['quantity'],
                 'price'      => $price,
-                'stock'      => $stock
+                'stock'      => $stock,
+                'image'      => $image,
+                'alt'        => $alt,
             ];
         }
 

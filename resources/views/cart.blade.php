@@ -13,14 +13,12 @@
 
                 <!-- Cart Items -->
                 <section aria-labelledby="cart-heading" class="lg:col-span-7">
-                    <h2 id="cart-heading" class="sr-only">Items in your shopping cart</h2>
-
                     @if (!empty($cart->items))
                         <ul role="list" class="divide-y divide-gray-200 border-b border-t border-gray-200">
                             @foreach ($cart->items as $item)
                                 <li class="flex py-6 sm:py-10 cart-item bg-white" data-item='@json($item)'>
                                     <div class="flex-shrink-0">
-                                        <img src="" alt=""
+                                        <img src="{{ $item['image'] }}" alt="{{ $item['alt'] }}"
                                             class="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48">
                                     </div>
 
@@ -49,7 +47,8 @@
                                                     max="{{ $item['stock'] }}"
                                                     class="quantity-input block w-20 rounded-md border border-gray-300 py-1.5 text-base leading-5 text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
                                                     data-route="{{ route('cart.update') }}" />
-                                                <p class="mt-1 text-sm text-gray-500"><strong>Available:</strong> {{ $item['stock'] }}</p>
+                                                <p class="mt-1 text-sm text-gray-500"><strong>Available:</strong>
+                                                    {{ $item['stock'] }}</p>
                                                 <div class="absolute right-0 top-0">
                                                     <button type="button"
                                                         class="delete-btn inline-flex -m-2 p-2 text-red-600 hover:text-red-800"
