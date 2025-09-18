@@ -3,32 +3,27 @@
 @section('title', 'School Shop')
 
 @section('content')
+    <x-nav />
+    <div class="container mx-auto p-6">
+        <form id="filterForm" class="mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <input type="text" name="search" id="searchInput" value="{{ request('search') }}"
+                    placeholder="Search Name, SKU, or ISBN" class="border border-gray-300 rounded px-4 py-2 w-full">
 
-    <body>
-        <x-nav />
-        <div class="container mx-auto p-6">
-            <form id="filterForm" class="mb-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <input type="text" name="search" id="searchInput" value="{{ request('search') }}"
-                        placeholder="Search Name, SKU, or ISBN" class="border border-gray-300 rounded px-4 py-2 w-full">
-
-                    <select name="category" id="categorySelect" class="border border-gray-300 rounded px-4 py-2 w-full">
-                        <option value="">All Categories</option>
-                        @foreach ($categories as $id => $name)
-                            <option value="{{ $id }}" {{ request('category') == $id ? 'selected' : '' }}>
-                                {{ ucfirst($name) }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </form>
-            <div id="items-container">
-                @include('components.item-list', ['items' => $items, 'categories' => $categories])
+                <select name="category" id="categorySelect" class="border border-gray-300 rounded px-4 py-2 w-full">
+                    <option value="">All Categories</option>
+                    @foreach ($categories as $id => $name)
+                        <option value="{{ $id }}" {{ request('category') == $id ? 'selected' : '' }}>
+                            {{ ucfirst($name) }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
+        </form>
+        <div id="items-container">
+            @include('components.item-list', ['items' => $items, 'categories' => $categories])
         </div>
-    </body>
-
-    </html>
+    </div>
 @endsection
 
 <style>
