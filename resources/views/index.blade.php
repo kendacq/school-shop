@@ -35,7 +35,11 @@
             const search = searchInput.value;
             const category = categorySelect.value;
 
-            fetch(`/?search=${search}&category=${category}`)
+            fetch(`/?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
                 .then(res => res.text())
                 .then(html => {
                     document.getElementById('items-container').innerHTML = html;
